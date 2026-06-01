@@ -26,3 +26,15 @@ VALUES
     (106, 'Meera Joshi', 'meera.j@example.com', '+91-9876543215', 2),
     (107, 'Vikram Malhotra', 'vikram.m@example.com', '+91-9876543216', 3),
     (108, 'Neha Reddy', 'neha.r@example.com', '+91-9876543217', 4);
+
+-- Insert proper regional data into the regions table
+-- Run this BEFORE inserting data into the customers table
+
+INSERT INTO regions (RegionID, RegionName)
+VALUES
+    (1, 'Maharashtra'),
+    (2, 'Karnataka'),
+    (3, 'Delhi'),
+    (4, 'West Bengal')
+
+
