@@ -1,0 +1,66 @@
+-- 2. Revenue Analysis --
+--include total revenue, revenue trends, and revenue by product/category/region.--
+
+-- 2.1.	What is the total revenue generated over the entire period?--
+select sum(od.quantity * p.price) as revenue
+from orderdetails OD
+join products p
+on OD.ProductID = p.ProductID;
+
+-- 2.2.	Revenue Excluding Returned Orders --
+
+select sum(OD.quantity - O.isreturned * p.price) as net_revenue
+from orderdetails OD
+join orders O 
+on OD.OrderID = o.OrderID
+join products p 
+on OD.ProductID = p.ProductID;
+
+-- 2.3.	Total Revenue per Year / Month--
+
+select year(o.orderdate) as year, sum(od.Quantity * p.price) as Revenue
+from orderdetails OD
+join products p
+on od.ProductID = p.ProductID
+join orders o
+on od.OrderID = o.OrderID
+group by year(orderdate);
+
+-- 2.4.	Revenue by Product / Category --
+
+select sum(od.quantity * p.price) as revenue, p.Category
+from orderdetails od
+join products p 
+on od.ProductID = p.ProductID
+join orders o
+on od.OrderID = o.OrderID
+group by Category;
+
+-- 2.5.	What is the average order value (AOV) across all orders?--
+
+select avg(OD.Quantity * p.price) as avg_order_value
+from orderdetails OD
+join products p
+on od.ProductID = p.ProductID;
+
+-- 2.6.	AOV per Year / Month--
+
+select year(o.orderdate) as year, avg(od.quantity * p.price) as revenue
+from orders o
+join orderdetails OD
+on o.OrderID = OD.OrderID
+join products p 
+on od.ProductID = p.ProductID
+group by year(orderdate);
+
+-- 2.7.	What is the average order size by region? --
+
+select R.regionname, avg(od.quantity)  as avg_order_by_region
+from orderdetails OD
+join orders o 
+on od.OrderID = o.OrderID
+join customers c
+on o.CustomerID = c.CustomerID
+join regions R 
+on c.RegionID = r.RegionID
+group by (regionname);

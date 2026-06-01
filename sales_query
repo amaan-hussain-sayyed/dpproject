@@ -1,0 +1,25 @@
+
+-- 5.Temporal Trends --
+--include monthly sales trends, average order value changes over time, and seasonal patterns.--
+-- 5.1.What are the monthly sales trends over the past year? --
+
+SELECT 
+    p.category,
+    DATE_FORMAT(o.orderdate, '%Y-%m') AS month,
+    SUM(od.quantity * p.price) AS total_sales
+FROM orderdetails od
+JOIN products p ON od.ProductID = p.ProductID
+JOIN orders o ON od.OrderID = o.OrderID
+GROUP BY p.category, DATE_FORMAT(o.orderdate, '%Y-%m')
+ORDER BY p.category, month;
+
+-- 5.2.	How does the average order value (AOV) change by month or week? --
+
+SELECT
+    DATE_FORMAT(o.orderdate, '%Y-%m') AS month,
+    SUM(od.quantity * p.price) / COUNT(DISTINCT o.orderid) AS AOV
+FROM orders o
+JOIN orderdetails od ON o.orderid = od.orderid
+join products p on od.ProductID = p.ProductID
+GROUP BY DATE_FORMAT(o.orderdate, '%Y-%m')
+ORDER BY month;

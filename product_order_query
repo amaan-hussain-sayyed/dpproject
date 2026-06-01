@@ -1,0 +1,64 @@
+-- 4.Product & Order Insights --
+--include best-selling products, return rates by product/category, and average order value.--
+-- 4.1.	What are the top 10 most sold products (by quantity)? -- 
+
+SELECT productid, SUM(quantity) AS total_quantity_sold
+FROM orderdetails
+GROUP BY productid
+ORDER BY total_quantity_sold DESC
+LIMIT 10;
+
+-- 4.2 What are the top 10 most sold products (by revenue)? --
+
+SELECT productid, SUM(price) AS total_revenue
+FROM products
+GROUP BY productid
+ORDER BY total_revenue DESC
+LIMIT 10;
+
+-- 4.3 Which products have the highest return rate? --
+
+SELECT 
+    p.productid,
+    p.productname,
+    SUM(o.isReturned) AS total_returns,
+    COUNT(*) AS total_sold,
+    (SUM(o.isreturned) / COUNT(*)) * 100 AS return_rate_percentage
+FROM products p
+JOIN orderdetails od ON p.ProductID = od.ProductID
+join orders o on od.OrderID = o.OrderID
+GROUP BY p.ProductID, p.ProductName
+ORDER BY return_rate_percentage DESC;
+
+-- 4.4.Return Rate by Category --
+
+SELECT
+    p.category,
+    SUM(o. isreturned) AS total_returns,
+    SUM(od.Quantity) AS total_sold,
+    (SUM(o.isreturned) / SUM(od.Quantity)) * 100 AS return_rate_percentage
+FROM products p
+JOIN orderdetails od ON p.productid = od.productid
+JOIN orders o on od.OrderID = o.OrderID
+GROUP BY p.category
+HAVING total_sold > 0
+ORDER BY return_rate_percentage DESC;
+ 
+-- 4.5.	What is the average price of products per region? --
+
+SELECT r.RegionName, AVG(p.price) AS average_price
+FROM products p
+join orderdetails od on p.ProductID = od.ProductID
+join orders o on od.OrderID = o.OrderID
+join customers c on o.CustomerID = c.CustomerID
+join regions r on c.RegionID = r.RegionID
+GROUP BY RegionName
+ORDER BY average_price DESC;
+
+-- 4.6.	What is the sales trend for each product category? --
+
+select p.Category, sum(od.quantity * p.price) AS total_sales
+FROM orderdetails od
+JOIN products p ON od.productid = p.productid
+JOIN orders o ON od.orderid = o.OrderID
+GROUP BY p.category;

@@ -1,0 +1,48 @@
+
+
+-- 7.Return & Refund Insights--
+--include return rates by product/category, return rates by region, and customer return behavior.--
+-- 7.1.	What is the overall return rate by product category?
+
+SELECT 
+    p.category,
+    SUM(o.isreturned) AS total_returns,
+    COUNT(*) AS total_orders,
+    ROUND(SUM(o.isreturned) / COUNT(*) * 100, 2) AS return_rate_percentage
+FROM orders o
+join orderdetails od on o.OrderID = od.OrderID
+JOIN products p ON od.productid = p.productid
+GROUP BY p.category
+ORDER BY return_rate_percentage DESC;
+
+-- 7.2.	What is the overall return rate by region?
+
+SELECT 
+    r.regionname,
+    SUM(o.IsReturned) AS total_returns,
+    COUNT(*) AS total_orders,
+    ROUND(SUM(o.isreturned) / COUNT(*) * 100, 2) AS return_rate_percentage
+FROM orders o
+join orderdetails od on o.OrderID = od.OrderID
+JOIN customers c ON o.customerid = c.customerid
+JOIN regions r ON c.regionid = r.regionid
+join products p on od.ProductID = p.ProductID
+GROUP BY r.regionname
+ORDER BY return_rate_percentage DESC;
+
+-- 7.3.Which customers are making frequent returns?
+
+SELECT 
+    c.customerid,
+    c.customername,
+    COUNT(*) AS total_orders,
+    SUM(o.IsReturned) AS total_returns,
+    ROUND(SUM(o.isreturned) / COUNT(*) * 100, 2) AS return_rate_percentage
+FROM customers c
+JOIN orders o ON c.customerid = o.customerid
+JOIN orderdetails od ON o.orderid = od.orderid
+GROUP BY c.customerid, c.customername
+HAVING total_returns > 0
+ORDER BY total_returns DESC, return_rate_percentage DESC;
+
+

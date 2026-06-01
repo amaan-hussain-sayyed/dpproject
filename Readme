@@ -1,0 +1,111 @@
+
+
+# Sales Insights Analytics - SQL Query Library
+
+## 📌 Project Overview
+
+This repository contains a structured suite of SQL scripts designed to analyze e-commerce or retail data. The queries extract actionable insights regarding revenue generation, customer purchasing behavior, product performance, regional sales distribution, and product return rates.
+
+## 🗄️ Database Schema (`table_query.sql`)
+
+The foundation of this project is the `sales_insights` database, composed of five interconnected tables:
+
+* **`regions`**: Geographic categorizations.
+* **`customers`**: Client details linked to specific regions.
+* **`products`**: Product details, categories, and pricing.
+* **`orders`**: Transaction records, dates, and return statuses.
+* **`orderdetails`**: Junction table mapping specific products and quantities to individual orders.
+
+**Key Methods Used:**
+
+* `CREATE TABLE`: Initializes the table structures and data types (e.g., `DECIMAL(10, 2)` for prices, `BOOLEAN` for return status).
+* `FOREIGN KEY`: Enforces referential integrity.
+* *Example:* `FOREIGN KEY (CustomerID) REFERENCES customers(CustomerID)` ensures an order cannot be placed by a non-existent customer.
+
+
+
+---
+
+## 📊 Analytical Scripts Breakdown & Function Examples
+
+### 1. Customer Insights (`Customer_query.sql`)
+
+Analyzes purchasing frequency, lifetime value, and segment tiering.
+
+* **`LAG()` & `DATEDIFF()**`: Used together to calculate the time between consecutive orders.
+* *How it works:* `LAG()` grabs the date of the customer's *previous* order and places it on the same row as their *current* order. `DATEDIFF()` then subtracts the two dates to find the gap in days.
+* *Code Example:* `AVG(DATEDIFF(orderdate, prev_order_date))` calculates the average days a customer waits before buying again.
+
+
+* **`CASE WHEN`**: Acts as conditional logic (If/Then) to categorize customers.
+* *How it works:* It evaluates the total spend and assigns a tier.
+* *Code Example:* `WHEN SUM(p.Price * od.Quantity) > 1500 THEN 'Platinum'` dynamically labels high-value shoppers.
+
+
+
+### 2. Product & Order Insights (`product_order_query.sql`)
+
+Evaluates inventory performance, highlighting best-sellers and frequently returned items.
+
+* **Custom Mathematical Operations**: Used to calculate specific business metrics like return rates.
+* *How it works:* It divides the sum of returned items by the total items sold, then multiplies by 100.
+* *Code Example:* `(SUM(o.isreturned) / COUNT(*)) * 100 AS return_rate_percentage`.
+
+
+* **`ORDER BY ... DESC` & `LIMIT**`: Used to identify top performers.
+* *How it works:* Sorts the calculated list from highest to lowest and cuts the list off at a specified number.
+* *Code Example:* `ORDER BY total_revenue DESC LIMIT 10` isolates the top 10 most profitable products.
+
+
+
+### 3. Revenue Analysis (`Revenu_query.sql`)
+
+Calculates total gross revenue, net revenue, and average order values across different dimensions.
+
+* **`SUM()`**: An aggregate function used to calculate total financial impact.
+* *How it works:* It multiplies the quantity of items sold by their price, then adds up all the results across the selected rows.
+* *Code Example:* `SUM(od.quantity * p.price) as revenue`.
+
+
+* **`YEAR()`**: A date extraction function.
+* *How it works:* It isolates just the year from a full `YYYY-MM-DD` timestamp so revenue can be grouped annually.
+* *Code Example:* `GROUP BY year(orderdate)` aggregates total sales by year.
+
+
+
+### 4. Temporal Trends (`sales_query.sql`)
+
+Maps out how sales volumes and order values change over time.
+
+* **`DATE_FORMAT()`**: Converts detailed timestamps into broader time periods.
+* *How it works:* It strips away the specific day and time, leaving only the Year and Month.
+* *Code Example:* `DATE_FORMAT(o.orderdate, '%Y-%m')` turns `2023-11-24` into `2023-11`, allowing you to group all November sales together.
+
+
+* **`COUNT(DISTINCT ...)`**: Ensures accurate averages.
+* *How it works:* When calculating Average Order Value, it counts the unique Order IDs rather than the number of line items, ensuring an order with 5 items isn't counted as 5 separate orders.
+
+
+
+### 5. Regional Insights (`Region_query.sql`)
+
+Compares geographic performance and revenue distribution.
+
+* **Scalar Subqueries**: A query nested inside the `SELECT` clause to provide a grand total for percentage calculations.
+* *How it works:* The main query calculates the revenue for *one* region, while the subquery calculates the revenue for *all* regions combined. It then divides the regional total by the grand total.
+* *Code Example:* `SUM(region_revenue) / (SELECT SUM(total_revenue) FROM orderdetails) * 100` yields the region's percentage of total company sales.
+
+
+
+### 6. Return & Refund Insights (`retrun_refund_query.sql`)
+
+Tracks return behaviors to identify problematic products, regions, or customers.
+
+* **Multi-Column `ORDER BY**`: Sorts data using a primary and secondary metric.
+* *How it works:* It ranks customers by their total number of returns first. If two customers have the same amount of returns, it uses their return percentage rate as a tie-breaker.
+* *Code Example:* `ORDER BY total_returns DESC, return_rate_percentage DESC`.
+
+
+* **`ROUND()`**: Cleans up numerical outputs.
+* *How it works:* It restricts trailing decimals on calculated metrics to maintain clean reporting.
+* *Code Example:* `ROUND(..., 2)` ensures the return rate percentage stops at two decimal places (e.g., `14.56%`).

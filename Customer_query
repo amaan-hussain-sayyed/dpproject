@@ -1,0 +1,76 @@
+-- 3.Customer Insights--
+--include customer segmentation, repeat customer rate, and customer lifetime value.--
+-- 3.1. Who are the top 10 customers by total revenue spent? --
+
+select sum(p.Price) as total_Rev, c.CustomerName
+from products p
+join orderdetails OD on p.productID = OD.productID
+join orders o on OD.orderID = o.orderID
+join customers c on o.CustomerID = c.CustomerID
+group by p.Price, c.CustomerName
+order by total_Rev desc
+limit 10;
+
+-- 3.2	What is the repeat customer rate?-- 
+
+SELECT 
+    ROUND(
+        (COUNT(DISTINCT CASE WHEN order_count > 1 THEN customerid END) 
+         / COUNT(DISTINCT customerid)) * 100
+    , 2) AS repeat_customer_rate_percentage
+FROM (
+    SELECT customerid, COUNT(*) AS order_count
+    FROM orders
+    GROUP BY customerid
+) AS customer_orders;
+
+
+-- 3.3.What is the average time between two consecutive orders for the same customer Region-wise?-- 
+
+WITH customer_order_intervals AS (
+    SELECT 
+        c.regionid,
+        r.regionname,
+        o.customerid,
+        o.orderdate,
+        LAG(o.orderdate) OVER (PARTITION BY o.customerid ORDER BY o.orderdate) AS prev_order_date
+    FROM orders o
+    JOIN customers c ON o.customerid = c.customerid
+    JOIN regions r ON c.regionid = r.regionid
+)
+SELECT
+    regionname,
+    ROUND(AVG(DATEDIFF(orderdate, prev_order_date)), 2) AS avg_days_between_orders
+FROM customer_order_intervals
+WHERE prev_order_date IS NOT NULL
+GROUP BY regionname
+ORDER BY avg_days_between_orders;
+
+
+-- 3.4.	Customer Segment (based on total spend) Platinum: Total Spend > 1500 Gold: 1000–1500 Silver: 500–999 Bronze: < 500 --
+
+SELECT c.CustomerID, SUM(p.price * od.quantity) AS total_spend,
+CASE
+        when SUM(p.Price * od.Quantity) > 1500 THEN 'Platinum'
+        WHEN SUM(p.Price * od.Quantity ) BETWEEN 1000 AND 1500 THEN 'Gold'
+        WHEN SUM(p.Price * od.Quantity) BETWEEN 500 AND 999 THEN 'Silver'
+        ELSE 'Bronze'
+        end as customer_segment
+FROM customers c
+JOIN orders o ON c.CustomerID = o.CustomerID
+join orderdetails od on o.OrderID = od.OrderID
+join products p on od.ProductID = p.ProductID
+GROUP BY c.CustomerID;
+
+
+-- 3.5 What is the customer lifetime value (CLV)?--
+
+SELECT
+    c.customerid,
+    SUM(p.price) AS customer_lifetime_value
+FROM orders o 
+join customers c on o.CustomerID = c.CustomerID
+join orderdetails od on o.OrderID = od.OrderID
+join products p on od.ProductID = p.ProductID
+GROUP BY CustomerID
+ORDER BY customer_lifetime_value DESC;

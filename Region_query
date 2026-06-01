@@ -1,0 +1,38 @@
+
+-- 6.Regional Insights --
+--include regional sales performance, regional customer behavior, and regional return rates.--
+-- 6.1.	Which regions have the highest order volume and which have the lowest? --
+
+-- Highest
+SELECT r.RegionName, COUNT(o.orderid) AS total_orders
+FROM orders o
+JOIN customers c ON o.customerid = c.customerid
+join regions r on c.RegionID = r.RegionID
+GROUP BY r.RegionName
+ORDER BY total_orders DESC
+LIMIT 1;
+
+-- Lowest
+SELECT r.RegionName, COUNT(o.orderid) AS total_orders
+FROM orders o
+JOIN customers c ON o.customerid = c.customerid
+join regions r on c.RegionID = r.RegionID
+GROUP BY r.RegionName
+ORDER BY total_orders asc
+LIMIT 1;
+
+-- 6.2.What is the revenue per region and how does it compare across different regions?
+
+SELECT 
+    r.regionname,
+    SUM(od.quantity * p.price) AS revenue,
+    ROUND(SUM(od.quantity * p.price) / 
+          (SELECT SUM(od2.quantity * p2.price)
+           FROM orderdetails od2
+           JOIN products p2 ON od2.ProductID = p2.ProductID) * 100, 2) AS revenue_percentage
+FROM orders o
+JOIN customers c ON o.customerid = c.customerid
+JOIN orderdetails od ON o.orderid = od.orderid
+JOIN products p ON od.ProductID = p.ProductID
+JOIN regions r ON c.RegionID = r.RegionID
+GROUP BY r.regionname;

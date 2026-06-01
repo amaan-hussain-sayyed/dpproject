@@ -1,0 +1,79 @@
+-- 1.General Sales Insights create database  --
+
+create database sales_insights;
+use sales_insights;
+-- Create tables --
+
+-- 1.1 Products Table --
+
+CREATE TABLE products (
+    ProductID INT PRIMARY KEY,
+    ProductName VARCHAR(255),
+    Category VARCHAR(255),
+    Price DECIMAL(10, 2),
+    productdescription TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    
+);  
+
+-- 1.2 Customers Table --
+CREATE TABLE customers (
+    CustomerID INT PRIMARY KEY,
+    CustomerName VARCHAR(255),
+    CustomerEmail VARCHAR(255),
+    CustomerPhone VARCHAR(20),
+    RegionID INT,
+    FOREIGN KEY (RegionID) REFERENCES regions(RegionID),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+);
+
+-- 1.3 Orders Table --
+CREATE TABLE orders (
+    OrderID INT PRIMARY KEY,
+    CustomerID INT,
+    OrderDate DATE,
+    IsReturned BOOLEAN,
+    OrderStatus VARCHAR(50),
+    FOREIGN KEY (CustomerID) REFERENCES customers(CustomerID),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+-- 1.4 OrderDetails Table --
+CREATE TABLE orderdetails (
+    OrderDetailID INT PRIMARY KEY,
+    OrderID INT,
+    ProductID INT,
+    Quantity INT,
+
+    FOREIGN KEY (OrderID) REFERENCES orders(OrderID),
+    FOREIGN KEY (ProductID) REFERENCES products(ProductID),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+-- 1.5 Regions Table --
+CREATE TABLE regions (
+    RegionID INT PRIMARY KEY,
+    RegionName VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+
+--get data from the tables --
+select *
+from customers;
+
+select *
+from products;
+
+select * 
+from orderdetails;
+
+select *
+from orders;
+
+select * 
+from regions;
